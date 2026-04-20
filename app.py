@@ -30,41 +30,27 @@ def is_authorized(req):
 
 @app.route("/", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "service": "config-api"}), 200
+    return jsonify({"status": "ok"}), 200
 
 
 @app.route("/config/<guild_id>", methods=["GET"])
 def get_config(guild_id):
     if not is_authorized(request):
-        return jsonify({"status": "erro", "msg": "Não autorizado"}), 401
+        return jsonify({"status": "erro"}), 401
 
     config = load_json(CONFIG_FILE)
-    return jsonify(config.get(str(guild_id), {})), 200
+    return jsonify(config.get(str(guild_id), {}))
 
 
 @app.route("/config/<guild_id>", methods=["POST"])
 def save_config(guild_id):
-    print(f"[CONFIG API] POST /config/{guild_id}")
-
     if not is_authorized(request):
-        print("[CONFIG API] Não autorizado")
-        return jsonify({"status": "erro", "msg": "Não autorizado"}), 401
+        return jsonify({"status": "erro"}), 401
 
-    data = request.get_json(silent=True)
-    print(f"[CONFIG API] DATA: {data}")
-
-    if not data:
-        print("[CONFIG API] Nenhum dado recebido")
-        return jsonify({"status": "erro", "msg": "Nenhum dado recebido"}), 400
+    data = request.get_json()
 
     config = load_json(CONFIG_FILE)
     config[str(guild_id)] = data
     save_json(CONFIG_FILE, config)
 
-    print("[CONFIG API] Config salva com sucesso")
-    return jsonify({"status": "ok"}), 200
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    return jsonify({"status": "ok"})
